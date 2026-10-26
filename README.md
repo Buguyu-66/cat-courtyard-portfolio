@@ -2,6 +2,8 @@
 
 一个可以自由探索的 3D 庭院作品集。使用 WASD / 方向键移动，靠近物件后左键互动，滚轮有限缩放。开场展示院子，移动后镜头平滑跟随奶牛猫。
 
+**在线体验：https://buguyu-66.github.io/cat-courtyard-portfolio/**
+
 小院包含推门、拍球、抓苹果树、扒拉铅笔、拨水互动，以及会收拾物品的屋主和园艺师。左侧目录提供产品项目、AI 插画、园林设计、其他作品、关于我与联系我六个栏目；作品与个人资料目前使用明确标注的占位内容。
 
 ## GitHub Pages
@@ -13,7 +15,7 @@
 网站当前仍可在原地址体验：
 https://mischief-cat-courtyard.buguyu.chatgpt.site
 
-GitHub Pages 最终网址应以 GitHub 的发布结果为准；本 README 未预填未经验证的网址。
+GitHub Pages 已启用 HTTPS。发布后已检查首页、样式、全部脚本依赖及四个 GLB 模型：均返回 HTTP 200，且内容与仓库提交一致。
 
 ## 本地预览与检查
 
