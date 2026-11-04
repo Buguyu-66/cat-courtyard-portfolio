@@ -10,7 +10,7 @@ export function createModelTransfer(manifest,{onProgress=()=>{},fetcher=fetch,id
   const touch=()=>{clearTimeout(idle);idle=setTimeout(()=>controller.abort(),idleMs);};
   const deadline=setTimeout(()=>controller.abort(),totalMs);touch();progress(file,0);
   try{
-   const response=await fetcher(`models/${file}${compressed?'.gz':''}?v=${item.version}`,{signal:controller.signal});
+   const response=await fetcher(`${item.path}${compressed?'.gz':''}?v=${item.version}`,{signal:controller.signal});
    if(!response.ok)throw new Error(`${file}: HTTP ${response.status}`);
    const chunks=[];let length=0;
    if(response.body){const reader=response.body.getReader();for(;;){const {done,value}=await reader.read();if(done)break;touch();chunks.push(value);length+=value.byteLength;progress(file,length);}}

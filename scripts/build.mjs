@@ -6,7 +6,12 @@ import {createHash} from 'node:crypto';
 import {build} from 'esbuild';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..'),docs=path.join(root,'docs');
 const hash=data=>createHash('sha256').update(data).digest('hex').slice(0,12),manifest={};
-for(const name of(await fs.readdir(path.join(docs,'models'))).filter(f=>f.endsWith('.glb'))){const raw=await fs.readFile(path.join(docs,'models',name)),packed=gzipSync(raw,{level:9});await fs.writeFile(path.join(docs,'models',name+'.gz'),packed);manifest[name]={bytes:raw.length,packedBytes:packed.length,version:hash(packed)};}
+for(const name of(await fs.readdir(path.join(docs,'models'))).filter(f=>f.endsWith('.glb'))){
+ const webPath='models-web/'+name,selected=await fs.access(path.join(docs,webPath)).then(()=>webPath,()=> 'models/'+name);
+ const raw=await fs.readFile(path.join(docs,selected)),packed=gzipSync(raw,{level:9});
+ await fs.writeFile(path.join(docs,selected+'.gz'),packed);
+ manifest[name]={path:selected,bytes:raw.length,packedBytes:packed.length,version:hash(packed)};
+}
 await fs.writeFile(path.join(docs,'model-manifest.json'),JSON.stringify(manifest,null,2)+'\n');
 await build({entryPoints:[path.join(docs,'app.js')],outfile:path.join(docs,'app.bundle.js'),bundle:true,format:'esm',platform:'browser',target:'es2022',minify:true,legalComments:'inline',charset:'utf8'});
 const revision=hash(await fs.readFile(path.join(docs,'app.bundle.js'))),boot=(await fs.readFile(path.join(root,'source/boot.js'),'utf8')).replace('__APP_BUNDLE_URL__','./app.bundle.js?v='+revision);

@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
+import {MeshoptDecoder} from './vendor/meshopt_decoder.mjs';
 import {mergeGeometries} from './vendor/BufferGeometryUtils.js';
 import {createMischief} from './mischief.js';
 import {createCollision} from './collision.js';
@@ -54,7 +55,7 @@ canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener(
 canvas.addEventListener('wheel',e=>{if(paused)return;e.preventDefault();desiredZoom=THREE.MathUtils.clamp(desiredZoom*Math.exp(-e.deltaY*.001),.9,2.25);},{passive:false});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'){travel=null;if(!content.hidden)closePage();else{$('#help').hidden=true;$('#mischiefPanel').hidden=true;if(ready)mischief.exitBox();}return;}if(paused||!ready)return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyE','KeyG'].includes(e.code)){e.preventDefault();keys.add(e.code);if(!e.repeat&&e.code==='KeyE')interact();if(!e.repeat&&e.code==='Space')meow();if(!e.repeat&&e.code==='KeyG')mischief.dropLeaf();}});
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();dragging=false;});
-const loader=new GLTFLoader(),transfer=createModelTransfer(manifest,{onProgress:p=>welcome.progress(p)});
+const loader=new GLTFLoader().setMeshoptDecoder(MeshoptDecoder),transfer=createModelTransfer(manifest,{onProgress:p=>welcome.progress(p)});
 async function load(file){const data=await transfer.load(file);return loader.parseAsync(data,'models/');}
 const occluders=[];
 function optimizeStatic(root){root.updateMatrixWorld(true);const groups=new Map();root.traverse(o=>{if(!o.isMesh)return;if(/^Swing_(seat|rope)/i.test(o.name)){mischief.attachSwingMesh(o);return;}const fade=/Rear_wall|Window_wall|Walnut_bookcase|Built_in|Connected_wall|Wall_decor/.test(o.name)||/Walnut_bookcase/.test(o.parent?.name);const side=/Window|wall_left/.test(o.name)?'left':'rear';const m=o.material;if(/^Pond_water/.test(o.name)){o.material=m.clone();o.material.transparent=true;o.material.opacity=.68;o.material.depthWrite=false;}const glow=/CoolGlow/.test(o.name)?'cool':/WarmGlow/.test(o.name)?'warm-added':/Lantern_warm_pane/.test(o.name)?'lantern':/Ivory_lamp_shade/.test(o.name)?'shade':'';const key=m.uuid+(fade?side:'')+glow+(/^Pond_water/.test(o.name)?'water':'');let g=o.geometry.clone();if(g.index)g=g.toNonIndexed();g.applyMatrix4(o.matrixWorld);for(const a of Object.keys(g.attributes))if(!['position','normal','uv'].includes(a))g.deleteAttribute(a);if(!g.attributes.normal)g.computeVertexNormals();if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.clearGroups();if(!groups.has(key))groups.set(key,{m:o.material.clone(),geos:[],fade,side,glow});groups.get(key).geos.push(g);});

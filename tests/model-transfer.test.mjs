@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createModelTransfer} from '../docs/model-transfer.js';
 const manifest=JSON.parse(fs.readFileSync(new URL('../docs/model-manifest.json',import.meta.url)));
-const bytes=name=>fs.readFileSync(new URL('../docs/models/'+name,import.meta.url));
-test('all compressed delivery files decode to the exact original editable model',async()=>{
- const progress=[],loader=createModelTransfer(manifest,{onProgress:p=>progress.push(p),fetcher:async url=>new Response(bytes(url.split('/').at(-1).split('?')[0]))});
+const bytes=name=>fs.readFileSync(new URL('../docs/'+manifest[name.replace(/\.gz$/,'')].path+(name.endsWith('.gz')?'.gz':''),import.meta.url));
+test('compressed delivery decodes exactly to the selected web asset and follows its manifest path',async()=>{
+ const progress=[],loader=createModelTransfer(manifest,{onProgress:p=>progress.push(p),fetcher:async url=>new Response(fs.readFileSync(new URL('../docs/'+url.split('?')[0],import.meta.url)))});
  for(const file of Object.keys(manifest))assert.deepEqual(Buffer.from(await loader.load(file)),bytes(file));
  assert.equal(progress.at(-1),95);assert.ok(progress.every(p=>p>=0&&p<=95));
 });

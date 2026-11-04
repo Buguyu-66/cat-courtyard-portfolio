@@ -17,7 +17,7 @@ for(const required of['index.html','style.css','app.js','layout.json','.nojekyll
 for(const file of files){
  const data=await fs.readFile(path.join(directory,file));
  assert(data.length<100*1024*1024,`Oversized file: ${file}`);
- if(file.endsWith('.js')){
+ if(/\.m?js$/.test(file)){
   for(const m of data.toString().matchAll(/^\s*import\s+(?:[^;]*?\bfrom\s*)?(['"])([^'"]+)\1/gm)){
    assert(m[2].startsWith('.'),`Nonlocal dependency: ${file} → ${m[2]}`);
    assert(all.has(path.posix.normalize(path.posix.join(path.posix.dirname(file),m[2]))),`Missing module: ${m[2]}`);
@@ -34,7 +34,12 @@ for(const file of files){
   }
  }
 }
-assert.equal(files.filter(f=>f.endsWith('.glb')).length,7);
+assert.equal(files.filter(f=>/^models\/.*\.glb$/.test(f)).length,7);
+const manifest=JSON.parse(await fs.readFile(path.join(directory,'model-manifest.json'),'utf8'));
+for(const item of Object.values(manifest)){
+ assert(all.has(item.path)&&all.has(item.path+'.gz'),'Missing selected delivery asset');
+ assert.equal((await fs.stat(path.join(directory,item.path))).size,item.bytes);
+}
 const html=await fs.readFile(path.join(directory,'index.html'),'utf8');
 for(const m of html.matchAll(/(?:src|href)="([^"#][^"]*)"/g))if(!/^https?:/.test(m[1]))assert(all.has(m[1].split('?')[0]),`Missing HTML dependency ${m[1]}`);
 const server=createServer();server.listen(0,'127.0.0.1');await once(server,'listening');
