@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#eef0e6"><title>猫咪工作室与花园 · 作品集预览</title><meta name="description" content="在工作室里看作品，在花园里遇见猫咪。"><link rel="icon" href="cat-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"></head>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#eef0e6"><title>猫咪工作室与花园 · 作品集预览</title><meta name="description" content="在工作室里看作品，在花园里遇见猫咪。"><link rel="icon" href="cat-logo.svg" type="image/svg+xml"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="welcome.css"></head>
 <body data-time="day">
 <aside class="sidebar">
  <a class="brand" href="#home" aria-label="返回花园"><span class="brand-icon"><img src="cat-logo.svg" alt="黑白奶牛猫标志"></span><span>一间工作室<span class="brand-en">A LITTLE CREATIVE SPACE</span></span></a>
@@ -11,25 +11,38 @@
  <canvas id="world" tabindex="0" aria-label="三维场景。WASD或方向键移动，E互动，空格喵叫，鼠标右键旋转，滚轮缩放。"></canvas>
  <header class="scene-top"><div><span class="eyebrow">THE STUDIO & GARDEN</span><p>今天，也适合四处逛逛。</p></div><div class="tools"><button id="dayNight" aria-label="切换到夜晚" aria-pressed="false">☾ 夜晚</button><button id="clues" aria-pressed="true">互动提示开</button><button id="sound" title="开关声音" aria-label="开启声音">声音关</button><button id="rotateLeft" aria-label="向左旋转视角">↶</button><button id="rotateRight" aria-label="向右旋转视角">↷</button><button id="reset" title="回到初始全景">↺ <span>全景</span></button></div></header>
  <div id="hotspots" aria-label="场景作品入口"></div><div id="playMarkers" aria-label="小猫互动入口"></div>
- <div id="loading" aria-label="小猫开场动画">
-  <div class="cat-welcome"><span class="welcome-eyebrow">A LITTLE STUDIO, A LITTLE MISCHIEF</span>
-  <svg class="intro-cat" viewBox="0 0 420 210" aria-hidden="true">
-   <defs><g id="paw-print" fill="#8d9b76"><ellipse cx="0" cy="3" rx="6" ry="5"/><ellipse cx="-7" cy="-4" rx="2.5" ry="3.5"/><ellipse cx="0" cy="-7" rx="2.5" ry="3.5"/><ellipse cx="7" cy="-4" rx="2.5" ry="3.5"/></g></defs>
-   <ellipse class="cat-shadow" cx="189" cy="169" rx="103" ry="9" fill="#cbd3bc" opacity=".55"/>
-   <g class="welcome-body"><path d="M236 143Q300 140 280 87" fill="none" stroke="#3c493e" stroke-width="19" stroke-linecap="round" class="welcome-tail"/>
-   <path d="M118 145Q115 88 178 91 239 80 253 137L249 157Q187 171 122 155" fill="#fcf5e5" stroke="#58664d" stroke-width="2"/>
-   <path d="M179 91Q167 117 192 132 218 141 230 113L222 98Q200 89 179 91" fill="#3e4a3f"/>
-   <path class="welcome-front-leg" d="m133 136-6 29h-30q-10-7 2-12l17-17" fill="#fcf5e5" stroke="#58664d" stroke-width="2" stroke-linejoin="round"/>
-   <path d="M226 143v20h20q12-8 1-15" fill="#fcf5e5" stroke="#58664d" stroke-width="2"/>
-   <g class="welcome-head"><path d="m91 107-2-37 25 20q16-5 28 1l22-23-3 43q5 43-34 44-43-4-36-48" fill="#fcf5e5" stroke="#58664d" stroke-width="2" stroke-linejoin="round"/>
-   <path d="m91 107-2-37 25 20q12 21-1 36-18 5-22-19" fill="#3e4a3f"/><path d="m145 91 15-16-3 23" fill="#dba4a1"/>
-   <g class="welcome-sleep-eyes" fill="none" stroke="#69745e" stroke-width="3" stroke-linecap="round"><path d="m103 119q7 7 14 0m21 0q7 7 14 0"/></g>
-   <g class="welcome-awake-eyes" fill="#40513e"><ellipse cx="110" cy="120" rx="3.5" ry="5"/><ellipse cx="144" cy="120" rx="3.5" ry="5"/></g>
-   <path d="m122 130 5 4 5-4" fill="#cf8c89"/><path d="M127 134v5m-7 0q7 5 14 0m-47-11 17 3m-16 5 16-1m45-4 17-3m-17 7 16 1" fill="none" stroke="#69745e" stroke-width="1.5" stroke-linecap="round"/></g></g>
-   <g class="welcome-z" fill="#7a8d6b" font-family="Georgia,serif"><text x="178" y="65" font-size="20">z</text><text x="198" y="44" font-size="27">z</text></g>
-   <g class="welcome-prints"><use href="#paw-print" x="285" y="165"/><use href="#paw-print" x="315" y="150"/><use href="#paw-print" x="344" y="166"/><use href="#paw-print" x="374" y="150"/></g>
-  </svg>
-  <h2>等小猫伸个懒腰</h2><p id="loadText">正在叫醒小院里的朋友们…</p><div class="progress"><div id="progress"></div></div><button id="enterGarden" hidden>跟小猫进院子 →</button><span class="welcome-note">慢一点也没关系，今天没有任务。</span></div>
+ <div id="loading" aria-label="捣蛋猫开场动画">
+  <div class="mischief-welcome">
+   <div class="mischief-edition">一间工作室 · 一只捣蛋猫</div>
+   <h2 class="mischief-title">捣<span>蛋</span>猫</h2><span class="mischief-en">A LITTLE MISCHIEF</span>
+   <p class="mischief-caption">院子很安静。直到你来了。</p>
+   <svg class="mischief-stage" viewBox="0 0 760 360" role="img" aria-label="黑白猫伸爪推落桌边的铅笔，然后装作无事发生">
+    <ellipse cx="373" cy="335" rx="284" ry="13" fill="#294e58" opacity=".4"/>
+    <path d="M125 266h23l-8 64h-15zm355 0h24l9 64h-15z" fill="#ad734d"/>
+    <path d="M81 245h445l19 12H92z" fill="#d9a273"/><path d="M92 257h453v15H92z" fill="#bf8459"/>
+    <g fill="none" stroke="#aac0a0" stroke-width="4" stroke-linecap="round"><path d="M174 219v-75m0 54-24-24m24 10 23-22"/></g>
+    <g fill="#97b496"><path d="M174 174q-28-4-25-24 27 2 25 24m0 17q25-4 31-25-27-1-31 25m0-32q14-18 4-34-17 16-4 34"/></g>
+    <path d="M150 211h49l-7 34h-35z" fill="#e8d9bc"/><path d="M147 210h55v8h-55z" fill="#f4e7cb"/>
+    <path class="intro-cat-tail" d="M277 210c-40-7-69-37-53-66 9-15 28-18 29-4 1 8-13 12-14 21-1 11 14 20 35 24" fill="none" stroke="#293a3a" stroke-width="19" stroke-linecap="round"/>
+    <path d="M278 187c8-37 46-46 78-28 21 12 39 21 59 24l9 42c-20 18-107 20-137 8-12-5-17-24-9-46" fill="#faf5e6"/>
+    <path d="M278 187c6-27 23-39 42-38 19 21 6 55-13 65l-26-3z" fill="#293a3a"/>
+    <path d="M289 215h30l-1 26q-14 8-29 0z" fill="#f8f2e2"/><path d="M373 212h27l10 27q-2 9-18 7l-16-9z" fill="#dcdccb"/>
+    <path d="M307 241h10m77 3h12" stroke="#bec9b9" stroke-width="2" stroke-linecap="round"/>
+    <g class="intro-cat-head">
+     <path d="m373 169-2-43 30 21q17-5 32 3l22-18-4 45q5 25-18 36-25 13-45-6-15-13-15-38" fill="#faf5e6"/>
+     <path d="m373 169-2-43 30 21q13 23-2 41-21 7-26-19" fill="#293a3a"/>
+     <path d="m440 153 11-13-2 22" fill="#c7ad96"/>
+     <path d="m420 175 17 2" stroke="#293a3a" stroke-width="3.4" stroke-linecap="round"/><path d="m384 175 11 1" stroke="#f8f2e2" stroke-width="3.1" stroke-linecap="round"/>
+     <path d="m438 190 11-1-5 6z" fill="#be8e6d"/><path d="m443 195-1 4-8 2m14-5 15-1m-14 6 12 3" fill="none" stroke="#7d9188" stroke-width="1.6" stroke-linecap="round"/>
+    </g>
+    <path class="intro-cat-paw" d="M405 210c19-5 30 3 45 12l29 5q16 3 8 12l-28 1c-19-2-33-6-47-6z" fill="#faf5e6"/>
+    <g transform="translate(500 240)"><g class="intro-pencil"><path d="M-32-4h59v8h-59z" fill="#e9bb64"/><path d="M-32 1h59v3h-59z" fill="#d19940"/><path d="m27-4 15 4-15 4z" fill="#ead8b6"/><path d="m36-1.7 6 1.7-6 1.7z" fill="#293a3a"/><path d="M-39-4h7v8h-7q-4-4 0-8" fill="#b87561"/><path d="M-33-4h4v8h-4z" fill="#c6d0c0"/></g></g>
+    <g class="intro-accident" stroke="#eed7a3" stroke-width="2" fill="none" stroke-linecap="round"><path d="m590 317 4-8m17 15 8-3m-32 18-8 2"/></g>
+    <g class="intro-excuse" fill="#e0e9da"><path d="m479 161 12-7-7 13"/><text x="498" y="158" font-family="Microsoft YaHei,PingFang SC,sans-serif" font-size="15" letter-spacing="3">不是我。</text></g>
+   </svg>
+   <div class="mischief-loading"><button id="enterGarden" disabled>小院准备中…</button><p id="loadText" role="status" aria-live="polite">正在布置现场，请猫咪稍安勿躁。</p><div class="progress" aria-hidden="true"><div id="progress"></div></div></div>
+   <span class="mischief-note">可以认真看作品，也可以顺便捣点乱。</span>
+  </div>
  </div>
  <div id="toast" role="status" aria-live="polite"></div>
  <button id="interact" hidden><kbd>E</kbd><span></span></button>

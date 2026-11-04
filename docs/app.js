@@ -6,13 +6,15 @@ import {createCollision} from './collision.js';
 import {findPath} from './navigation.js';
 import {placeMarkers} from './marker-layout.js';
 import {createDayNight} from './day-night.js';
+import {createWelcome} from './welcome.js';
 const layout=await fetch('layout.json').then(r=>{if(!r.ok)throw new Error('Layout unavailable');return r.json();});
 const $=s=>document.querySelector(s), stage=$('#stage'),canvas=$('#world');
 const content=$('#content'), body=$('#pageBody'), keys=new Set();
+const welcome=createWelcome();
 const pageInfo={projects:['产品项目','PRODUCT THINKING','从问题出发，让想法成为可以使用的体验。',['产品项目 01','产品项目 02']],illustration:['AI 插画','IMAGINATION & EXPERIMENTS','关于角色、色彩与画面叙事的探索。',['IP 设计系列','大促插画系列']],landscape:['园林设计','LANDSCAPE & SPACE','让自然、空间与人的日常相遇。',['园林项目 01','园林项目 02','园林项目 03']],other:['其他作品','OTHER OBSERVATIONS','记录季节，也记录日常里值得停留的瞬间。',['节气系列','个人摄影']],about:['关于我','A LITTLE ABOUT ME','个人照片、介绍、经历与简历将陆续补充。'],contact:['联系我','SAY HELLO','欢迎交流想法、作品与合作机会。']};
 let paused=false,page=null,detail=null,ready=false,soundOn=false,ctx=null,elapsed=0,toastUntil=0,actionUntil=0,actionKind='',lastMeow=-10,travel=null,cluesVisible=true;
 function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');toastUntil=elapsed+3.2;}
-function showPage(id){travel=null;page=id;detail=null;paused=true;keys.clear();content.hidden=false;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));renderPage();$('#back').focus();}
+function showPage(id){welcome.dismiss();travel=null;page=id;detail=null;paused=true;keys.clear();content.hidden=false;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));renderPage();$('#back').focus();}
 function closePage(){content.hidden=true;page=null;paused=false;keys.clear();document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));canvas.focus();}
 function renderPage(){const [title,en,desc,items]=pageInfo[page];
  body.innerHTML=`<div class="page-intro"><span class="eyebrow">${en}</span><h2>${detail??title}</h2><p>${desc}</p></div>`;
@@ -159,5 +161,5 @@ function update(dt){if(paused){hotspots.forEach(h=>h.el.hidden=true);playMarkers
  nearest=candidates().filter(c=>c.d<c.range).sort((a,b)=>a.d-b.d)[0]??null;$('#interact').hidden=!nearest;if(nearest)$('#interact span').textContent=nearest.label;$('#catStatus').textContent=travel?'正在走近互动物件 · 方向键可取消':nearest?nearest.label:'点击金色标记，让小猫走近捣蛋';
 }
 let previous=performance.now();function frame(t){const dt=Math.min(.05,(t-previous)/1000);previous=t;lighting.update(dt);update(dt);renderer.render(scene,camera);requestAnimationFrame(frame);}requestAnimationFrame(frame);
-try{const [g,surround,cozy]=await Promise.all([load('scene.glb'),load('surroundings.glb'),load('cozy-props.glb')]);optimizeStatic(g.scene);optimizeStatic(surround.scene);mischief.attachCozyProps(cozy.scene);[player,orange,tabby,longhair]=await Promise.all([cat('cat.glb','奶牛猫',layout.playerSpawn,.76),cat('orange-cat.glb','橘白猫',layout.sofa.orangeCat,.62),cat('tabby-cat.glb','狸花猫',[-1.3,.12,.65],.65),cat('longhair-cat.glb','长毛猫',layout.swing.cat,.65)]);player.root.rotation.y=Math.PI;orange.root.rotation.y=Math.PI/2;longhair.root.rotation.y=.1;ready=true;$('#loading').classList.add('welcome-ready');$('#loadText').textContent='小猫醒啦，一起进小院吧';$('#enterGarden').hidden=false;let entered=false;const enterGarden=()=>{if(entered)return;entered=true;$('#loading').style.opacity=0;setTimeout(()=>$('#loading').hidden=true,650);};$('#enterGarden').onclick=enterGarden;setTimeout(enterGarden,matchMedia('(prefers-reduced-motion: reduce)').matches?150:1450);if(innerWidth<540)toast('手机端可直接使用顶部导航浏览作品');else toast('点击金色标记开始互动 · WASD 移动 · 滚轮缩放');}
-catch(e){console.error(e);$('#loadText').textContent='场景加载未完成，请刷新页面重试。作品导航仍可使用。';$('#loading').style.pointerEvents='none';}
+try{const [g,surround,cozy]=await Promise.all([load('scene.glb'),load('surroundings.glb'),load('cozy-props.glb')]);optimizeStatic(g.scene);optimizeStatic(surround.scene);mischief.attachCozyProps(cozy.scene);[player,orange,tabby,longhair]=await Promise.all([cat('cat.glb','奶牛猫',layout.playerSpawn,.76),cat('orange-cat.glb','橘白猫',layout.sofa.orangeCat,.62),cat('tabby-cat.glb','狸花猫',[-1.3,.12,.65],.65),cat('longhair-cat.glb','长毛猫',layout.swing.cat,.65)]);player.root.rotation.y=Math.PI;orange.root.rotation.y=Math.PI/2;longhair.root.rotation.y=.1;ready=true;welcome.ready();if(innerWidth<540)toast('手机端可直接使用顶部导航浏览作品');else toast('点击金色标记开始互动 · WASD 移动 · 滚轮缩放');}
+catch(e){console.error(e);welcome.failed();}
