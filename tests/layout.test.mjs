@@ -5,7 +5,7 @@ import {createCollision} from '../docs/collision.js';
 import {findPath} from '../docs/navigation.js';
 const layout=JSON.parse(fs.readFileSync(new URL('../docs/layout.json',import.meta.url),'utf8'));
 const {blocked,obstacles}=createCollision(layout);
-obstacles.push([layout.box.center[0],layout.box.center[2],.47,.46]);
+obstacles.push([layout.box.center[0],layout.box.center[2],.49,.48]);
 test('integrated scene matches the moved desk, instrument and retained room anchors',()=>{
  const b=fs.readFileSync(new URL('../docs/models/scene.glb',import.meta.url));const g=JSON.parse(b.subarray(20,20+b.readUInt32LE(12)));
  for(const[name,x,z]of[['Work desk',...layout.desk.center],['Desk chair',...layout.desk.chair],['Cello',...layout.cello],['Garden model walnut table',...layout.modelTable],['Rear wall',-2.1,-4.03],['Swing seat',layout.swing.cat[0],layout.swing.cat[2]],['Arch post',layout.arch[0]-.75,layout.arch[1]],['Square sofa solid base',...layout.sofa.center]]){
@@ -27,7 +27,7 @@ test('both tables are fully on timber, while arch and lantern posts are fully on
  }
 });
 test('click-to-walk routes around enlarged furniture to each playful target and back',()=>{
- const targets=[[layout.playerSpawn[0],layout.playerSpawn[2]],layout.box.access,...Object.values(layout.cozy).map(p=>p.access),[layout.ball[0],layout.ball[2]],layout.pencil.access,layout.pond.interaction,layout.swing.access,[-2.4,-1.65],...layout.leaves.map(p=>[p[0],p[2]]),...layout.portfolio.map(p=>p.access)];
+ const targets=[[layout.playerSpawn[0],layout.playerSpawn[2]],layout.box.access,...Object.values(layout.cozy).map(p=>p.access),layout.wildlife.fish.access,layout.wildlife.butterfly.access,[layout.ball[0],layout.ball[2]],layout.pencil.access,layout.pond.interaction,layout.swing.access,[-2.4,-1.65],...layout.leaves.map(p=>[p[0],p[2]]),...layout.portfolio.map(p=>p.access)];
  for(const a of targets)for(const b of targets){
   const path=findPath({x:a[0],z:a[1]},{x:b[0],z:b[1]},blocked);
   assert.ok(path.length,`route ${a} to ${b}`);let prev={x:a[0],z:a[1]};

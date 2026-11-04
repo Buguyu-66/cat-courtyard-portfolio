@@ -11,7 +11,7 @@ function sceneItems(width,height,theta,zoom){
  c.position.copy(target).add(new THREE.Vector3(Math.sin(theta)*22,17,Math.cos(theta)*22));c.lookAt(target);c.zoom=zoom;c.updateProjectionMatrix();c.updateMatrixWorld();
  const anchor=pos=>{const p=new THREE.Vector3(...pos).project(c);return{x:(p.x*.5+.5)*width,y:(-p.y*.5+.5)*height};};
  const works=layout.portfolio.map(p=>({id:'work-'+p.id,anchor:anchor(p.pin),w:92,h:36,priority:100,offset:p.offset}));
- const actions=[layout.ball,layout.pencil.home,[layout.pond.ripple[0],.32,layout.pond.ripple[1]],[layout.box.center[0],.92,layout.box.center[2]],...Object.values(layout.cozy).map(t=>t.pin??(t.steps?.at(-1)??t.seat).map((v,i)=>v+(i===1?.35:0))),...layout.leaves.map(p=>[p[0],p[1]+.18,p[2]]),[layout.swing.pivot[0],1.15,layout.swing.pivot[2]+.6],[layout.sofa.orangeCat[0],1.71,layout.sofa.orangeCat[2]],[-1.3,.97,.65],[layout.swing.cat[0],1.47,layout.swing.cat[2]]];
+ const actions=[layout.wildlife.fish.water.map((v,i)=>v+(i===1?.25:0)),layout.wildlife.butterfly.center,layout.ball,layout.pencil.home,[layout.pond.ripple[0],.32,layout.pond.ripple[1]],[layout.box.center[0],.92,layout.box.center[2]],...Object.values(layout.cozy).map(t=>t.pin??(t.steps?.at(-1)??t.seat).map((v,i)=>v+(i===1?.35:0))),...layout.leaves.map(p=>[p[0],p[1]+.18,p[2]]),[layout.swing.pivot[0],1.15,layout.swing.pivot[2]+.6],[layout.sofa.orangeCat[0],1.71,layout.sofa.orangeCat[2]],[-1.3,.97,.65],[layout.swing.cat[0],1.47,layout.swing.cat[2]]];
  return [...works,...actions.map((p,i)=>({id:'play-'+i,anchor:anchor(p),w:22,h:22,priority:30}))];
 }
 test('portfolio and action labels remain separate through camera rotation, zoom and smaller screens',()=>{

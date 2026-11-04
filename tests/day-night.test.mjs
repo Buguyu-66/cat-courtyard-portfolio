@@ -15,3 +15,8 @@ test('lamps loaded after an early night toggle receive the current light level',
  const s=setup();s.light.setNight(true);s.light.update(3);const lamp=new T.MeshStandardMaterial();s.light.registerMaterial(lamp,'shade');assert.equal(lamp.emissiveIntensity,.8);
  s.light.setNight(false);s.light.update(1.5);const lantern=new T.MeshStandardMaterial();s.light.registerMaterial(lantern,'lantern');assert.equal(lantern.emissiveIntensity,1.5);s.light.update(1.5);assert.equal(lamp.emissiveIntensity,0);assert.equal(lantern.emissiveIntensity,.2);
 });
+
+test('new indoor warm lights and cool pond lights illuminate independently and turn off by day',()=>{
+ const s=setup();s.light.setNight(true);s.light.update(3);const warm=s.scene.getObjectByName('Window reading warm light'),cool=s.scene.getObjectByName('Pond cool garden light 0');assert.ok(warm.intensity>=15);assert.ok(warm.color.r>warm.color.b);assert.ok(cool.color.b>cool.color.r);assert.ok(cool.intensity>0);assert.equal(s.scene.getObjectByName('Warm studio light').intensity,60);
+ const a=new T.MeshStandardMaterial(),b=new T.MeshStandardMaterial();s.light.registerMaterial(a,'warm-added');s.light.registerMaterial(b,'cool');assert.equal(a.emissiveIntensity,1.8);assert.equal(b.emissiveIntensity,1.6);s.light.setNight(false);s.light.update(3);assert.equal(a.emissiveIntensity,0);assert.equal(b.emissiveIntensity,0);
+});

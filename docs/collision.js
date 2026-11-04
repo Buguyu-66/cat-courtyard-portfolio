@@ -7,12 +7,20 @@ export function createCollision(layout) {
   [...layout.mailbox,.17,.17],[ax-.75,az,.12,.12],[ax+.75,az,.12,.12],
   [ax-1.02,az+.15,.16,.16],[ax+1.05,az+.15,.16,.16],
   ...[...layout.planters,...layout.windowPlants].map(([x,z,r])=>[x,z,r,r]),
-  ...Object.values(layout.cozy??{}).filter(p=>p.halfSize).map(p=>[p.center[0],p.center[2],...p.halfSize])];
+  ...Object.values(layout.cozy??{}).filter(p=>p.halfSize).map(p=>[p.center[0],p.center[2],...p.halfSize]),...(layout.extraSolids??[])];
  function blocked(x,z,r=.19){
   const b=layout.bounds;if(x<b.minX+r||x>b.maxX-r||z<b.minZ+r||z>b.maxZ-r)return true;
   const {center,radius}=layout.pond;
   if(((x-center[0])/(radius[0]+r))**2+((z-center[1])/(radius[1]+r))**2<1)return true;
   return obstacles.some(([cx,cz,hx,hz])=>Math.abs(x-cx)<hx+r&&Math.abs(z-cz)<hz+r);
  }
+ // Exact swept clearance prevents tiny corner cuts between navigation samples.
+ blocked.segmentClear=(a,b,r=.192)=>{
+  if(blocked(a.x,a.z,r)||blocked(b.x,b.z,r))return false;
+  const {center,radius}=layout.pond,u={x:(a.x-center[0])/(radius[0]+r),z:(a.z-center[1])/(radius[1]+r)},v={x:(b.x-a.x)/(radius[0]+r),z:(b.z-a.z)/(radius[1]+r)};
+  const t=Math.max(0,Math.min(1,-(u.x*v.x+u.z*v.z)/(v.x*v.x+v.z*v.z||1)));if((u.x+t*v.x)**2+(u.z+t*v.z)**2<1)return false;
+  for(const[cx,cz,hx,hz]of obstacles){let lo=0,hi=1,intersects=true;for(const[p,d,min,max]of[[a.x,b.x-a.x,cx-hx-r,cx+hx+r],[a.z,b.z-a.z,cz-hz-r,cz+hz+r]]){if(Math.abs(d)<1e-10){if(p<min||p>max){intersects=false;break;}}else{let s=(min-p)/d,e=(max-p)/d;if(s>e)[s,e]=[e,s];lo=Math.max(lo,s);hi=Math.min(hi,e);if(lo>hi){intersects=false;break;}}}if(intersects)return false;}
+  return true;
+ };
  return {obstacles,blocked};
 }

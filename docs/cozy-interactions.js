@@ -6,7 +6,7 @@ export function createCozyInteractions({scene,layout,actors,setAnim,tone,toast,d
  const config=layout.cozy,rocker=new THREE.Group(),strings=new THREE.Group();
  rocker.name='Rocking chair motion';rocker.position.set(...config.rocker.center);scene.add(rocker);
  strings.name='Playable violin strings';scene.add(strings);
- let available=false,time=0,state=null,seat=null,phase=0,step=0,route=[],from=null,entry=null,entryRotation=null,entryScale=null,rockAngle=0,pluckTime=99,notes=0;
+ let available=false,time=0,state=null,seat=null,phase=0,step=0,route=[],from=null,entry=null,entryRotation=null,entryScale=null,rockAngle=0,pluckTime=99,notes=0,restTime=0;
  const targets={rocker:{...config.rocker,label:'跳上摇椅晒太阳',icon:'☀',yaw:0},bed:{...config.bed,label:'在窗边猫窝打个盹',icon:'☾',yaw:Math.PI/2},tower:{...config.tower,label:'爬上猫爬架看看风景',icon:'⌂',yaw:.5}};
  const v=p=>new THREE.Vector3(...p),distance=(p,a)=>Math.hypot(p.x-a[0],p.z-a[1]);
  const pin=config.strings.pin;
@@ -53,7 +53,7 @@ export function createCozyInteractions({scene,layout,actors,setAnim,tone,toast,d
  }
  function restore(){const a=actors().player;if(a&&entry){a.root.position.copy(entry);a.root.rotation.copy(entryRotation);a.root.scale.copy(entryScale);setAnim(a,'Idle');}state=null;seat=null;phase=0;}
  function update(dt,moving=false){
-  time+=dt;pluckTime+=dt;const a=actors().player;if(!a)return;
+  time+=dt;pluckTime+=dt;if(state==='rest')restTime+=dt;else restTime=0;const a=actors().player;if(!a)return;
   if(state==='rest'&&moving)exit();
   const want=state==='rest'&&seat==='rocker'?Math.sin(time*1.7)*.038:0;rockAngle=THREE.MathUtils.damp(rockAngle,want,5,dt);rocker.rotation.x=rockAngle;
   if(state==='pluck'){
@@ -70,7 +70,7 @@ export function createCozyInteractions({scene,layout,actors,setAnim,tone,toast,d
   if(state==='rest'){
    const t=targets[seat];a.root.position.copy(v(t.steps?.at(-1)??t.seat));a.root.rotation.set(0,t.yaw,0);
    if(seat==='rocker'){a.root.position.sub(rocker.position).applyAxisAngle(v([1,0,0]),rockAngle).add(rocker.position);a.root.rotation.x=rockAngle;}
-   setAnim(a,seat==='tower'?'Rest':'Lounge');
+   setAnim(a,seat==='tower'&&restTime<2.7?'Stretch':'Lounge');
   }
   for(const [n,line]of strings.children.entries()){
    const attr=line.geometry.attributes.position,amplitude=pluckTime<1?.022*Math.exp(-pluckTime*4):0;

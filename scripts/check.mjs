@@ -30,7 +30,7 @@ for(const file of files){
   if(/(?:^|\/)cat\.glb$|(?:orange|tabby|longhair)-cat\.glb$/.test(file)){
    assert(g.skins?.length,`Missing skin: ${file}`);
    for(const action of['Idle','Walk','Paw','Rest'])assert(g.animations.some(a=>a.name===action||a.name.startsWith(action+'.')),`Missing ${action}: ${file}`);
-   if(file==='models/cat.glb')assert(g.animations.some(a=>a.name==='Lounge'),'Missing lounge animation');
+   if(file==='models/cat.glb')for(const clip of['Lounge','Stretch','Shake'])assert(g.animations.some(a=>a.name===clip),`Missing ${clip} animation`);
   }
  }
 }
