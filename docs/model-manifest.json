@@ -1,44 +1,44 @@
 {
   "cat.glb": {
-    "path": "models/cat.glb",
-    "bytes": 2305848,
-    "packedBytes": 1923882,
-    "version": "db34a547ec27"
+    "path": "models-web/cat.glb",
+    "bytes": 396436,
+    "packedBytes": 355472,
+    "version": "8d0f6f61759b"
   },
   "cozy-props.glb": {
     "path": "models-web/cozy-props.glb",
-    "bytes": 515884,
-    "packedBytes": 174638,
-    "version": "ce3688e39226"
+    "bytes": 391216,
+    "packedBytes": 121982,
+    "version": "1693df9c9d2b"
   },
   "longhair-cat.glb": {
-    "path": "models/longhair-cat.glb",
-    "bytes": 3792584,
-    "packedBytes": 2612361,
-    "version": "c4865d63ed2c"
+    "path": "models-web/longhair-cat.glb",
+    "bytes": 600344,
+    "packedBytes": 513198,
+    "version": "6a831b06deba"
   },
   "orange-cat.glb": {
-    "path": "models/orange-cat.glb",
-    "bytes": 2508192,
-    "packedBytes": 1851837,
-    "version": "948991a7bc33"
+    "path": "models-web/orange-cat.glb",
+    "bytes": 358392,
+    "packedBytes": 293872,
+    "version": "ad95f96e4c13"
   },
   "scene.glb": {
     "path": "models-web/scene.glb",
-    "bytes": 6701444,
-    "packedBytes": 3570451,
-    "version": "a9fa355116b7"
+    "bytes": 4828564,
+    "packedBytes": 2463116,
+    "version": "53463047edcc"
   },
   "surroundings.glb": {
     "path": "models-web/surroundings.glb",
-    "bytes": 3505316,
-    "packedBytes": 1865965,
-    "version": "b33ef18e3ccc"
+    "bytes": 2237648,
+    "packedBytes": 1103992,
+    "version": "b0612b612b9f"
   },
   "tabby-cat.glb": {
-    "path": "models/tabby-cat.glb",
-    "bytes": 2935176,
-    "packedBytes": 2215119,
-    "version": "ecfca1775376"
+    "path": "models-web/tabby-cat.glb",
+    "bytes": 462548,
+    "packedBytes": 396233,
+    "version": "57743383fbc6"
   }
 }

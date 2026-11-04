@@ -1,5 +1,5 @@
 // Lossless transport compression; editable GLBs remain the source of truth.
-export function createModelTransfer(manifest,{onProgress=()=>{},fetcher=fetch,idleMs=30000,totalMs=120000,compressed=typeof DecompressionStream!=='undefined'}={}){
+export function createModelTransfer(manifest,{onProgress=()=>{},fetcher=fetch,idleMs=60000,totalMs=300000,compressed=typeof DecompressionStream!=='undefined'}={}){
  const critical=['scene.glb','cozy-props.glb','cat.glb'],received=new Map(),pending=new Map();
  const size=file=>manifest[file][compressed?'packedBytes':'bytes'];
  const total=critical.reduce((sum,file)=>sum+size(file),0);
