@@ -1,0 +1,37 @@
+{
+  "cat.glb": {
+    "bytes": 2305848,
+    "packedBytes": 1923882,
+    "version": "db34a547ec27"
+  },
+  "cozy-props.glb": {
+    "bytes": 1369052,
+    "packedBytes": 390937,
+    "version": "9cc7b63dbc95"
+  },
+  "longhair-cat.glb": {
+    "bytes": 3792584,
+    "packedBytes": 2612361,
+    "version": "c4865d63ed2c"
+  },
+  "orange-cat.glb": {
+    "bytes": 2508192,
+    "packedBytes": 1851837,
+    "version": "948991a7bc33"
+  },
+  "scene.glb": {
+    "bytes": 20267424,
+    "packedBytes": 11639797,
+    "version": "2f58dab3ef76"
+  },
+  "surroundings.glb": {
+    "bytes": 9432088,
+    "packedBytes": 5013323,
+    "version": "205d679eea2c"
+  },
+  "tabby-cat.glb": {
+    "bytes": 2935176,
+    "packedBytes": 2215119,
+    "version": "ecfca1775376"
+  }
+}

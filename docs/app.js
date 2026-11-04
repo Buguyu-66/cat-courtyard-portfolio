@@ -7,7 +7,9 @@ import {findPath} from './navigation.js';
 import {placeMarkers} from './marker-layout.js';
 import {createDayNight} from './day-night.js';
 import {createWelcome} from './welcome.js';
-const layout=await fetch('layout.json').then(r=>{if(!r.ok)throw new Error('Layout unavailable');return r.json();});
+import layout from './layout.json' with {type:'json'};
+import manifest from './model-manifest.json' with {type:'json'};
+import {createModelTransfer} from './model-transfer.js';
 const $=s=>document.querySelector(s), stage=$('#stage'),canvas=$('#world');
 const content=$('#content'), body=$('#pageBody'), keys=new Set();
 const welcome=createWelcome();
@@ -15,7 +17,7 @@ const pageInfo={projects:['产品项目','PRODUCT THINKING','从问题出发，�
 let paused=false,page=null,detail=null,ready=false,soundOn=false,ctx=null,elapsed=0,toastUntil=0,actionUntil=0,actionKind='',lastMeow=-10,travel=null,cluesVisible=true;
 function toast(t){$('#toast').textContent=t;$('#toast').classList.add('show');toastUntil=elapsed+3.2;}
 function showPage(id){welcome.dismiss();travel=null;page=id;detail=null;paused=true;keys.clear();content.hidden=false;document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===id));renderPage();$('#back').focus();}
-function closePage(){content.hidden=true;page=null;paused=false;keys.clear();document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));canvas.focus();}
+function closePage(){content.hidden=true;page=null;paused=false;keys.clear();document.querySelectorAll('[data-page]').forEach(b=>b.classList.remove('active'));if(!ready)welcome.resume();canvas.focus();}
 function renderPage(){const [title,en,desc,items]=pageInfo[page];
  body.innerHTML=`<div class="page-intro"><span class="eyebrow">${en}</span><h2>${detail??title}</h2><p>${desc}</p></div>`;
  if(detail){body.insertAdjacentHTML('afterbegin',`<button class="detail-back">← 返回${title}</button>`);body.querySelector('.detail-back').onclick=()=>{detail=null;renderPage();};
@@ -52,8 +54,8 @@ canvas.addEventListener('pointerup',()=>dragging=false);canvas.addEventListener(
 canvas.addEventListener('wheel',e=>{if(paused)return;e.preventDefault();desiredZoom=THREE.MathUtils.clamp(desiredZoom*Math.exp(-e.deltaY*.001),.9,2.25);},{passive:false});
 window.addEventListener('keydown',e=>{if(e.code==='Escape'){travel=null;if(!content.hidden)closePage();else{$('#help').hidden=true;$('#mischiefPanel').hidden=true;if(ready)mischief.exitBox();}return;}if(paused||!ready)return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space','KeyE','KeyG'].includes(e.code)){e.preventDefault();keys.add(e.code);if(!e.repeat&&e.code==='KeyE')interact();if(!e.repeat&&e.code==='Space')meow();if(!e.repeat&&e.code==='KeyG')mischief.dropLeaf();}});
 window.addEventListener('keyup',e=>keys.delete(e.code));window.addEventListener('blur',()=>{keys.clear();dragging=false;});
-const loader=new GLTFLoader();let loadedCount=0;
-async function load(file){const gltf=await loader.loadAsync('models/'+file);loadedCount++;$('#progress').style.width=`${loadedCount/7*100}%`;return gltf;}
+const loader=new GLTFLoader(),transfer=createModelTransfer(manifest,{onProgress:p=>welcome.progress(p)});
+async function load(file){const data=await transfer.load(file);return loader.parseAsync(data,'models/');}
 const occluders=[];
 function optimizeStatic(root){root.updateMatrixWorld(true);const groups=new Map();root.traverse(o=>{if(!o.isMesh)return;if(/^Swing_(seat|rope)/i.test(o.name)){mischief.attachSwingMesh(o);return;}const fade=/Rear_wall|Window_wall|Walnut_bookcase|Built_in|Connected_wall|Wall_decor/.test(o.name)||/Walnut_bookcase/.test(o.parent?.name);const side=/Window|wall_left/.test(o.name)?'left':'rear';const m=o.material;if(/^Pond_water/.test(o.name)){o.material=m.clone();o.material.transparent=true;o.material.opacity=.68;o.material.depthWrite=false;}const glow=/CoolGlow/.test(o.name)?'cool':/WarmGlow/.test(o.name)?'warm-added':/Lantern_warm_pane/.test(o.name)?'lantern':/Ivory_lamp_shade/.test(o.name)?'shade':'';const key=m.uuid+(fade?side:'')+glow+(/^Pond_water/.test(o.name)?'water':'');let g=o.geometry.clone();if(g.index)g=g.toNonIndexed();g.applyMatrix4(o.matrixWorld);for(const a of Object.keys(g.attributes))if(!['position','normal','uv'].includes(a))g.deleteAttribute(a);if(!g.attributes.normal)g.computeVertexNormals();if(!g.attributes.uv)g.setAttribute('uv',new THREE.BufferAttribute(new Float32Array(g.attributes.position.count*2),2));g.clearGroups();if(!groups.has(key))groups.set(key,{m:o.material.clone(),geos:[],fade,side,glow});groups.get(key).geos.push(g);});
  for(const {m,geos,fade,side,glow}of groups.values()){lighting.registerMaterial(m,glow);const g=mergeGeometries(geos,false);const mesh=new THREE.Mesh(g,m);mesh.castShadow=true;mesh.receiveShadow=true;if(fade){m.transparent=true;occluders.push({mesh,side});}scene.add(mesh);geos.forEach(g=>g.dispose());}}
@@ -65,7 +67,7 @@ const mischief=createMischief({scene,layout,actors:()=>({player,tabby,orange,lon
 $('#carryLeaf').onclick=()=>{if(!paused)mischief.dropLeaf();};
 $('#mischiefToggle').onclick=()=>{$('#mischiefPanel').hidden=!$('#mischiefPanel').hidden;$('#help').hidden=true;};
 $('#mischiefClose').onclick=()=>$('#mischiefPanel').hidden=true;
-$('#resetMischief').onclick=()=>{if(!ready||paused)return;travel=null;mischief.reset();actionUntil=0;ball.position.set(...layout.ball);ballVelocity.set(0,0);ballLast=-10;pencilTime=-1;pencil.position.set(...layout.pencil.home);pencil.rotation.set(0,0,Math.PI/2);for(const a of [tabby,orange,longhair]){a.reactUntil=0;a.target=null;a.repathAt=0;}toast('落叶、纸箱、秋千和小物件都收拾好了，可以再玩一次');};
+$('#resetMischief').onclick=()=>{if(!ready||paused)return;travel=null;mischief.reset();actionUntil=0;ball.position.set(...layout.ball);ballVelocity.set(0,0);ballLast=-10;pencilTime=-1;pencil.position.set(...layout.pencil.home);pencil.rotation.set(0,0,Math.PI/2);for(const a of [tabby,orange,longhair])if(a){a.reactUntil=0;a.target=null;a.repathAt=0;}toast('落叶、纸箱、秋千和小物件都收拾好了，可以再玩一次');};
 function move(a,dx,dz){let p=a.root.position;const n=Math.max(1,Math.ceil(Math.hypot(dx,dz)/.07));for(let i=0;i<n;i++){if(!blocked(p.x+dx/n,p.z))p.x+=dx/n;if(!blocked(p.x,p.z+dz/n))p.z+=dz/n;}if(Math.abs(dx)+Math.abs(dz)>.001){const goal=Math.atan2(dx,dz);a.root.rotation.y+=Math.atan2(Math.sin(goal-a.root.rotation.y),Math.cos(goal-a.root.rotation.y))*.18;}}
 function pathTo(start,end){return findPath(start,end,blocked).map(p=>new THREE.Vector3(p.x,.12,p.z));}
 const ball=new THREE.Mesh(new THREE.SphereGeometry(.12,24,16),new THREE.MeshStandardMaterial({color:'#c88d65',roughness:.85}));ball.position.set(...layout.ball);ball.castShadow=true;scene.add(ball);const ballVelocity=new THREE.Vector2();let ballLast=-10,tabbyNudged=false;
@@ -75,7 +77,7 @@ function ripple(){for(let i=0;i<3;i++){const m=new THREE.Mesh(new THREE.RingGeom
 const hotspots=layout.portfolio.map(({id,label,pin,access,offset})=>{const b=document.createElement('button');b.className='hotspot';b.textContent=label;b.onclick=()=>{if(player&&distance(player.root.position,access)<1.4)showPage(id);else toast('靠近这件物品查看，或直接使用左侧导航');};$('#hotspots').append(b);return{id,label,pos:new THREE.Vector3(...pin),access,offset,el:b};});
 function distance(p,arr){return Math.hypot(p.x-arr[0],p.z-arr[1]);}
 let nearest=null;
-function candidates(){if(!player)return[];if(mischief.locked)return mischief.candidates();const p=player.root.position,list=[...mischief.candidates(),...hotspots.map(h=>({label:'查看'+h.label,d:distance(p,h.access),range:1.2,run:()=>showPage(h.id)}))];list.push({id:'ball',icon:'●',pin:ball.position.clone().add(new THREE.Vector3(0,.28,0)),access:[ball.position.x,ball.position.z],label:'拍一拍小球',d:p.distanceTo(ball.position),range:1.25,run:()=>{const v=new THREE.Vector2(ball.position.x-p.x,ball.position.z-p.z).normalize();ballVelocity.copy(v).multiplyScalar(2.5);ballLast=elapsed;tabbyNudged=false;act('Paw');tone('tap');toast('球滚起来了，狸花猫也想一起玩');}});list.push({id:'pencil',icon:'✎',pin:pencil.position.clone().add(new THREE.Vector3(0,.25,0)),access:layout.pencil.access,label:pencilTime<0?'扒拉桌边的铅笔':'看看地上的铅笔',d:distance(p,layout.pencil.access),range:.9,run:()=>{if(pencilTime>=0){toast('等一会儿，铅笔会回到桌边');return;}pencilTime=elapsed;act('Paw','pencil');tone('tap');tabby.reactUntil=elapsed+7;tabby.target=new THREE.Vector3(layout.pencil.access[0],.12,layout.pencil.access[1]);toast('啪嗒！狸花猫听见了');}});list.push({id:'pond',icon:'≈',pin:new THREE.Vector3(layout.pond.ripple[0],.32,layout.pond.ripple[1]),access:layout.pond.interaction,label:'在池塘边拨水',d:distance(p,layout.pond.interaction),range:1.05,run:()=>{act('Paw');ripple();tone('water');tabby.reactUntil=elapsed+6;tabby.target=new THREE.Vector3(layout.pond.interaction[0],.12,layout.pond.interaction[1]-.4);toast('水面泛起涟漪，小猫好奇地望过来');}});
+function candidates(){if(!player)return[];if(mischief.locked)return mischief.candidates();const p=player.root.position,list=[...mischief.candidates(),...hotspots.map(h=>({label:'查看'+h.label,d:distance(p,h.access),range:1.2,run:()=>showPage(h.id)}))];list.push({id:'ball',icon:'●',pin:ball.position.clone().add(new THREE.Vector3(0,.28,0)),access:[ball.position.x,ball.position.z],label:'拍一拍小球',d:p.distanceTo(ball.position),range:1.25,run:()=>{const v=new THREE.Vector2(ball.position.x-p.x,ball.position.z-p.z).normalize();ballVelocity.copy(v).multiplyScalar(2.5);ballLast=elapsed;tabbyNudged=false;act('Paw');tone('tap');toast('球滚起来了，狸花猫也想一起玩');}});list.push({id:'pencil',icon:'✎',pin:pencil.position.clone().add(new THREE.Vector3(0,.25,0)),access:layout.pencil.access,label:pencilTime<0?'扒拉桌边的铅笔':'看看地上的铅笔',d:distance(p,layout.pencil.access),range:.9,run:()=>{if(pencilTime>=0){toast('等一会儿，铅笔会回到桌边');return;}pencilTime=elapsed;act('Paw','pencil');tone('tap');if(tabby){tabby.reactUntil=elapsed+7;tabby.target=new THREE.Vector3(layout.pencil.access[0],.12,layout.pencil.access[1]);}toast(tabby?'啪嗒！狸花猫听见了':'啪嗒！铅笔掉到地上了');}});list.push({id:'pond',icon:'≈',pin:new THREE.Vector3(layout.pond.ripple[0],.32,layout.pond.ripple[1]),access:layout.pond.interaction,label:'在池塘边拨水',d:distance(p,layout.pond.interaction),range:1.05,run:()=>{act('Paw');ripple();tone('water');if(tabby){tabby.reactUntil=elapsed+6;tabby.target=new THREE.Vector3(layout.pond.interaction[0],.12,layout.pond.interaction[1]-.4);}toast('水面泛起涟漪，小猫好奇地望过来');}});
  for(const a of [orange,tabby,longhair])if(a)list.push({id:'cat-'+a.name,icon:'♡',pin:a.root.position.clone().add(new THREE.Vector3(0,.85,0)),access:a===orange?[-2.4,-1.65]:a===longhair?layout.swing.access:[a.root.position.x,a.root.position.z],label:'和'+a.name+'打招呼',d:p.distanceTo(a.root.position),range:1.65,run:()=>{act('Paw');respond(a);}});return list;}
 function act(n,kind=''){travel=null;actionUntil=elapsed+1.1;actionKind=kind;setAnim(player,n);}
 function respond(a){a.reactUntil=elapsed+3;setAnim(a,'Paw');a.root.rotation.y=Math.atan2(player.root.position.x-a.root.position.x,player.root.position.z-a.root.position.z);tone('meow');toast(a===orange?'橘白猫伸了个懒腰，抬头看你':a===longhair?'秋千上的猫轻轻回了一声喵':'狸花猫靠过来，想和你玩');if(a===tabby)a.target=player.root.position.clone();}
@@ -161,5 +163,24 @@ function update(dt){if(paused){hotspots.forEach(h=>h.el.hidden=true);playMarkers
  nearest=candidates().filter(c=>c.d<c.range).sort((a,b)=>a.d-b.d)[0]??null;$('#interact').hidden=!nearest;if(nearest)$('#interact span').textContent=nearest.label;$('#catStatus').textContent=travel?'正在走近互动物件 · 方向键可取消':nearest?nearest.label:'点击金色标记，让小猫走近捣蛋';
 }
 let previous=performance.now();function frame(t){const dt=Math.min(.05,(t-previous)/1000);previous=t;lighting.update(dt);update(dt);renderer.render(scene,camera);requestAnimationFrame(frame);}requestAnimationFrame(frame);
-try{const [g,surround,cozy]=await Promise.all([load('scene.glb'),load('surroundings.glb'),load('cozy-props.glb')]);optimizeStatic(g.scene);optimizeStatic(surround.scene);mischief.attachCozyProps(cozy.scene);[player,orange,tabby,longhair]=await Promise.all([cat('cat.glb','奶牛猫',layout.playerSpawn,.76),cat('orange-cat.glb','橘白猫',layout.sofa.orangeCat,.62),cat('tabby-cat.glb','狸花猫',[-1.3,.12,.65],.65),cat('longhair-cat.glb','长毛猫',layout.swing.cat,.65)]);player.root.rotation.y=Math.PI;orange.root.rotation.y=Math.PI/2;longhair.root.rotation.y=.1;ready=true;welcome.ready();if(innerWidth<540)toast('手机端可直接使用顶部导航浏览作品');else toast('点击金色标记开始互动 · WASD 移动 · 滚轮缩放');}
-catch(e){console.error(e);welcome.failed();}
+const backgroundStatus=document.createElement('button');backgroundStatus.id='sceneLoad';backgroundStatus.hidden=true;stage.append(backgroundStatus);
+const backgroundJobs=[
+ async()=>optimizeStatic((await load('surroundings.glb')).scene),
+ async()=>{orange=await cat('orange-cat.glb','橘白猫',layout.sofa.orangeCat,.62);orange.root.rotation.y=Math.PI/2;},
+ async()=>{tabby=await cat('tabby-cat.glb','狸花猫',[-1.3,.12,.65],.65);},
+ async()=>{longhair=await cat('longhair-cat.glb','长毛猫',layout.swing.cat,.65);longhair.root.rotation.y=.1;},
+];
+let remainingJobs=backgroundJobs,backgroundBusy=false;
+async function finishGarden(){
+ if(backgroundBusy)return;backgroundBusy=true;backgroundStatus.hidden=false;backgroundStatus.disabled=true;backgroundStatus.textContent='花草和朋友们正在赶来…';
+ const pending=remainingJobs,results=await Promise.allSettled(pending.map(job=>job()));
+ remainingJobs=pending.filter((job,i)=>results[i].status==='rejected');backgroundBusy=false;backgroundStatus.disabled=false;
+ if(!remainingJobs.length)backgroundStatus.hidden=true;else{backgroundStatus.textContent='部分花草或猫咪还没到 · 点击重试';results.filter(r=>r.status==='rejected').forEach(r=>console.warn(r.reason));}
+}
+backgroundStatus.onclick=finishGarden;
+try{
+ const [g,cozy,mainCat]=await Promise.all([load('scene.glb'),load('cozy-props.glb'),cat('cat.glb','奶牛猫',layout.playerSpawn,.76)]);
+ optimizeStatic(g.scene);mischief.attachCozyProps(cozy.scene);player=mainCat;player.root.rotation.y=Math.PI;ready=true;welcome.ready();
+ toast(innerWidth<540?'手机端可直接使用顶部导航浏览作品':'点击金色标记开始互动 · WASD 移动 · 滚轮缩放');
+ requestAnimationFrame(()=>void finishGarden());
+}catch(e){console.error(e);welcome.failed();}

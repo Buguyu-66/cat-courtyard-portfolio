@@ -36,7 +36,7 @@ for(const file of files){
 }
 assert.equal(files.filter(f=>f.endsWith('.glb')).length,7);
 const html=await fs.readFile(path.join(directory,'index.html'),'utf8');
-for(const m of html.matchAll(/(?:src|href)="([^"#][^"]*)"/g))if(!/^https?:/.test(m[1]))assert(all.has(m[1]),`Missing HTML dependency ${m[1]}`);
+for(const m of html.matchAll(/(?:src|href)="([^"#][^"]*)"/g))if(!/^https?:/.test(m[1]))assert(all.has(m[1].split('?')[0]),`Missing HTML dependency ${m[1]}`);
 const server=createServer();server.listen(0,'127.0.0.1');await once(server,'listening');
 try{
  const base='http://127.0.0.1:'+server.address().port+prefix;
